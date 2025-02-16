@@ -1,9 +1,9 @@
-import os 
+import os
 from flask import Flask, render_template, request, jsonify, redirect, url_for, session, Blueprint
 import openai
 from dotenv import load_dotenv
 
-# 加载环境变量
+
 load_dotenv()
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
@@ -11,7 +11,7 @@ app.secret_key = os.getenv("SECRET_KEY", "79515e01fd5fe2ccf7abaa36bbea4640")
 
 # OpenAI API Key
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-openai.api_key = OPENAI_API_KEY
+client = openai.OpenAI(api_key=OPENAI_API_KEY)
 
 # Blueprint for routes
 bp = Blueprint("main", __name__)
@@ -46,8 +46,8 @@ def analyze_text():
         return jsonify({"error": "No text provided"}), 400
 
     try:
-        response = openai.ChatCompletion.create(
-            model="gpt-4o-mini",
+        response = client.chat.completions.create(
+            model="gpt-4o",
             messages=[
                 {"role": "system", "content": "You are a professional psychologist with expertise in dream analysis."},
                 {"role": "user", "content": f"Analyze this dream: {user_input}"}
@@ -56,8 +56,7 @@ def analyze_text():
             temperature=0.7
         )
 
-        analysis = response["choices"][0]["message"]["content"].strip()
-
+        analysis = response.choices[0].message.content.strip()
         return jsonify({"analysis": analysis})
 
     except Exception as e:
