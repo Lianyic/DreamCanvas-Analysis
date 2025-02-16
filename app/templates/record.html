@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dream Analysis</title>
+    <link rel="stylesheet" href="/static/css/record.css">
+</head>
+<body>
+    <div class="navbar">
+        <a href="/">Home</a>
+        <a href="/dashboard">Dashboard</a>
+        <a href="/record">Record Dream</a>
+        <a href="/atlas">Dream Atlas</a>
+    </div>
+
+    <div class="hero-image">
+        <div class="hero-text">
+            <h1>Record and Analyze Your Dreams</h1>
+            <p>Enter your dream below and receive an AI-generated analysis.</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Enter Your Dream</h2>
+        <textarea id="userInput" placeholder="Describe your dream..." rows="5" cols="50"></textarea><br>
+        <button id="analyzeBtn">Analyze</button>
+        <div id="loading" style="display: none;">Analyzing your dream...</div>
+        <div id="result"></div>
+    </div>
+
+    <footer>
+        <p>&copy; DreamCanvas</p>
+    </footer>
+
+    <script>
+        document.getElementById("analyzeBtn").addEventListener("click", function() {
+            const userInput = document.getElementById("userInput").value.trim();
+            if (!userInput) {
+                alert("Please enter a dream description.");
+                return;
+            }
+
+            document.getElementById("loading").style.display = "block";
+            document.getElementById("result").innerHTML = "";
+
+            fetch("/analyze", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ text: userInput })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("loading").style.display = "none";
+                if (data.analysis) {
+                    document.getElementById("result").innerHTML = `<h3>Analysis Result:</h3><p>${data.analysis}</p>`;
+                } else {
+                    document.getElementById("result").innerHTML = `<p style="color:red;">Error: ${data.error || "Unknown error occurred."}</p>`;
+                }
+            })
+            .catch(error => {
+                document.getElementById("loading").style.display = "none";
+                document.getElementById("result").innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
+            });
+        });
+    </script>
+</body>
+</html>

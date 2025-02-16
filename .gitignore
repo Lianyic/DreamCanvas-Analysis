@@ -1,0 +1,12 @@
+dreamenv/
+__pycache__/
+.env
+migrations/
+.vscode/
+*.log
+*.sqlite3
+*.pyc
+*.pyo
+*.pyd
+
+*.dockerignore
