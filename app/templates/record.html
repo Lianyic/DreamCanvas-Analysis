@@ -3,8 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dream Analysis</title>
-    <link rel="stylesheet" href="/static/css/record.css">
+    <title>DreamCanvas - Dream Analysis</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const backgrounds = [
+                "/static/images/background1.png",
+                "/static/images/background2.png",
+                "/static/images/background3.png"
+            ];
+            document.body.style.backgroundImage = `url(${backgrounds[Math.floor(Math.random() * backgrounds.length)]})`;
+        });
+    </script>
 </head>
 <body>
     <div class="navbar">
@@ -14,23 +24,21 @@
         <a href="/atlas">Dream Atlas</a>
     </div>
 
-    <div class="hero-image">
-        <div class="hero-text">
-            <h1>Record and Analyze Your Dreams</h1>
-            <p>Enter your dream below and receive an AI-generated analysis.</p>
-        </div>
+    <div class="hero-text">
+        <h1>Record and Analyze Your Dreams</h1>
+        <p>Enter your dream below and receive an AI-generated analysis.</p>
     </div>
 
     <div class="container">
-        <h2>Enter Your Dream</h2>
-        <textarea id="userInput" placeholder="Describe your dream..." rows="5" cols="50"></textarea><br>
+        <h2>Describe Your Dream</h2>
+        <textarea id="userInput" placeholder="Enter your dream here..."></textarea>
         <button id="analyzeBtn">Analyze</button>
-        <div id="loading" style="display: none;">Analyzing your dream...</div>
-        <div id="result"></div>
+        <div id="loading" class="loading" style="display: none;">Analyzing your dream...</div>
+        <div id="result" class="result-box"></div>
     </div>
 
     <footer>
-        <p>&copy; DreamCanvas</p>
+        <p>&copy; 2025 DreamCanvas</p>
     </footer>
 
     <script>
@@ -46,9 +54,7 @@
 
             fetch("/analyze", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ text: userInput })
             })
             .then(response => response.json())
