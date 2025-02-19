@@ -1,0 +1,55 @@
+name: Deploy Dream Analysis Service to Azure Container Instance
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+env:
+  CONTAINER_NAME: dream-analysis-service
+  RESOURCE_GROUP: DreamCanvas
+  IMAGE_NAME: ghcr.io/lianyic/dreamcanvas-analysis-service:latest
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Login to GitHub Container Registry
+      run: echo "${{ secrets.GIT_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+    - name: Build Docker Image
+      run: docker build -t $IMAGE_NAME .
+
+    - name: Push Docker Image to GHCR
+      run: docker push $IMAGE_NAME
+
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Delete existing Azure Container Instance (if exists)
+      continue-on-error: true
+      run: |
+        az container delete --resource-group $RESOURCE_GROUP --name $CONTAINER_NAME --yes
+
+    - name: Create new Azure Container Instance
+      run: |
+        az container create \
+          --resource-group $RESOURCE_GROUP \
+          --name $CONTAINER_NAME \
+          --image $IMAGE_NAME \
+          --dns-name-label dreamcanvas-analysis \
+          --ports 5001 \
+          --cpu 1 \
+          --memory 1 \
+          --os-type Linux \
+          --environment-variables \
+            SECRET_KEY=${{ secrets.SECRET_KEY }} \
+            OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
+            AUTH_SERVICE_URL=${{ secrets.AUTH_SERVICE_URL }}
