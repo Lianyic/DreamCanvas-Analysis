@@ -1,4 +1,4 @@
-dreamenv/
+dreamvenv/
 __pycache__/
 .env
 migrations/
