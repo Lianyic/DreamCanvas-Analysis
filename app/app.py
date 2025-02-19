@@ -16,7 +16,7 @@ client = openai.OpenAI(api_key=OPENAI_API_KEY)
 # Blueprint for routes
 bp = Blueprint("main", __name__)
 
-AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL", "http://auth-services.bshtc3h3fqgkgcct.ukwest.azurecontainer.io:5000")
+AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL", "http://dreamcanvas-auth.ukwest.azurecontainer.io:5000/")
 
 @bp.route("/")
 def home():
