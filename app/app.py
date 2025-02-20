@@ -1,23 +1,33 @@
 import os
-from flask import Flask, render_template, request, jsonify, redirect, url_for, session, Blueprint
+from flask import Flask, render_template, request, jsonify, redirect, session, Blueprint
 from flask_cors import CORS
+from flask_session import Session
+import redis
 import openai
 from dotenv import load_dotenv
 
 load_dotenv()
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
-app.secret_key = os.getenv("SECRET_KEY")
+app.secret_key = os.getenv("SECRET_KEY", "a_secure_secret_key")
 
+# 配置 CORS，允许跨域携带 Cookie
 CORS(app, supports_credentials=True)
 
-app.config.update(
-    SESSION_COOKIE_SAMESITE="None", 
-    SESSION_COOKIE_SECURE=True,
-    SESSION_COOKIE_HTTPONLY=True,
-    SESSION_COOKIE_NAME="session",
-    SESSION_COOKIE_DOMAIN=None
+# 配置 Redis 存储 Session，避免跨域 Cookie 限制
+app.config["SESSION_TYPE"] = "redis"
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_USE_SIGNER"] = True
+app.config["SESSION_KEY_PREFIX"] = "session:"
+app.config["SESSION_REDIS"] = redis.StrictRedis(
+    host=os.getenv("REDIS_HOST", "localhost"),
+    port=int(os.getenv("REDIS_PORT", 6379)),
+    db=0,
+    decode_responses=True
 )
+
+# 初始化 Session
+Session(app)
 
 # OpenAI API Key
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -30,19 +40,18 @@ AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL", "http://dreamcanvas-auth.ukwest
 
 @bp.route("/")
 def home():
-    app.logger.info("Session Data:", session)
+    app.logger.info("Session Data: %s", session)
     if "username" in session:
         return redirect("http://dreamcanvas-analysis.ukwest.azurecontainer.io:5001/record")
     return redirect(f"{AUTH_SERVICE_URL}/")
 
 @bp.route("/record", methods=["GET"])
 def record_page():
-    app.logger.info("Session Data:", session)
-    app.logger.info("Cookies Received:", request.cookies)
+    app.logger.info("Session Data: %s", session)
+    app.logger.info("Cookies Received: %s", request.cookies)
 
     if "username" not in session:
         app.logger.info("No username in session, redirecting to home...")
-        print("No username in session, redirecting to home...")
         return redirect("http://dreamcanvas-auth.ukwest.azurecontainer.io:5000/")
 
     return render_template("record.html")
@@ -74,7 +83,6 @@ def analyze_text():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
 
 @app.after_request
 def apply_cors(response):
