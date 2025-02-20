@@ -12,10 +12,11 @@ app.secret_key = os.getenv("SECRET_KEY")
 CORS(app, supports_credentials=True)
 
 app.config.update(
-    SESSION_COOKIE_SAMESITE="Lax",
-    # SESSION_COOKIE_SECURE=True
-    SESSION_COOKIE_SECURE=False,
-    SESSION_COOKIE_DOMAIN='.ukwest.azurecontainer.io'
+    SESSION_COOKIE_SAMESITE="None", 
+    SESSION_COOKIE_SECURE=True,
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_NAME="session",
+    SESSION_COOKIE_DOMAIN=None
 )
 
 # OpenAI API Key
