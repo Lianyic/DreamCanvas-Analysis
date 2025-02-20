@@ -32,7 +32,7 @@ AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL", "http://dreamcanvas-auth.ukwest
 def home():
     app.logger.info("Session Data:", session)
     if "username" in session:
-        redirect("http://dreamcanvas-analysis.ukwest.azurecontainer.io:5001/record")
+        return redirect("http://dreamcanvas-analysis.ukwest.azurecontainer.io:5001/record")
     return redirect(f"{AUTH_SERVICE_URL}/")
 
 @bp.route("/record", methods=["GET"])
