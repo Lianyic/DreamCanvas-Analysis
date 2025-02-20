@@ -1,5 +1,6 @@
 dreamvenv/
 __pycache__/
+.venv/
 .env
 migrations/
 .vscode/
