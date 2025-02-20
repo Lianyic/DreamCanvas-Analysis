@@ -1,5 +1,6 @@
 import os
 from flask import Flask, render_template, request, jsonify, redirect, url_for, session, Blueprint
+from flask_cors import CORS
 import openai
 from dotenv import load_dotenv
 
@@ -8,6 +9,7 @@ load_dotenv()
 app = Flask(__name__, template_folder="templates", static_folder="static")
 app.secret_key = os.getenv("SECRET_KEY")
 
+CORS(app, supports_credentials=True)
 
 app.config.update(
     SESSION_COOKIE_SAMESITE="Lax",
