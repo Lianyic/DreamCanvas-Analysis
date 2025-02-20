@@ -25,16 +25,18 @@ AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL", "http://dreamcanvas-auth.ukwest
 
 @bp.route("/")
 def home():
+    app.logger.info("Session Data:", session)
     if "username" in session:
         redirect("http://dreamcanvas-analysis.ukwest.azurecontainer.io:5001/record")
     return redirect(f"{AUTH_SERVICE_URL}/")
 
 @bp.route("/record", methods=["GET"])
 def record_page():
-    print("Session Data:", session)
-    print("Cookies Received:", request.cookies)
+    app.logger.info("Session Data:", session)
+    app.logger.info("Cookies Received:", request.cookies)
 
     if "username" not in session:
+        app.logger.info("No username in session, redirecting to home...")
         print("No username in session, redirecting to home...")
         return redirect("http://dreamcanvas-auth.ukwest.azurecontainer.io:5000/")
 
