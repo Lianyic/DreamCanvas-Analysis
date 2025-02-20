@@ -3,11 +3,16 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for, s
 import openai
 from dotenv import load_dotenv
 
-
 load_dotenv()
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
 app.secret_key = os.getenv("SECRET_KEY")
+
+
+app.config.update(
+    SESSION_COOKIE_SAMESITE="None",
+    SESSION_COOKIE_SECURE=True
+)
 
 # OpenAI API Key
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -26,8 +31,9 @@ def home():
 
 @bp.route("/record", methods=["GET"])
 def record_page():
-    print("Session Data:", session) 
-    
+    print("Session Data:", session)
+    print("Cookies Received:", request.cookies)
+
     if "username" not in session:
         print("No username in session, redirecting to home...")
         return redirect(url_for("main.home"))
@@ -61,6 +67,14 @@ def analyze_text():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@app.after_request
+def apply_cors(response):
+    response.headers["Access-Control-Allow-Origin"] = "http://dreamcanvas-auth.ukwest.azurecontainer.io:5000"
+    response.headers["Access-Control-Allow-Credentials"] = "true"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+    return response
 
 app.register_blueprint(bp)
 
