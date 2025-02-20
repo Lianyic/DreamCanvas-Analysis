@@ -11,7 +11,8 @@ app.secret_key = os.getenv("SECRET_KEY")
 
 app.config.update(
     SESSION_COOKIE_SAMESITE="None",
-    SESSION_COOKIE_SECURE=True
+    # SESSION_COOKIE_SECURE=True
+    SESSION_COOKIE_SECURE=False
 )
 
 # OpenAI API Key
