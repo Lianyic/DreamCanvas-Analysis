@@ -32,14 +32,27 @@ AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL", "http://dreamcanvas-auth.ukwest
 def home():
     username = request.cookies.get("username")
     if username and redis_client.get(f"session:{username}"):
-        return redirect("http://dreamcanvas-analysis.ukwest.azurecontainer.io:5001/record")
+        return redirect("https://dreamcanvas-analysis.ukwest.azurecontainer.io/record")
     return redirect(f"{AUTH_SERVICE_URL}/")
 
 @bp.route("/record", methods=["GET"])
 def record_page():
     username = request.cookies.get("username")
-    if not username or not redis_client.get(f"session:{username}"):
+    
+    print("🔹 Cookie username:", username)
+    if not username:
+        print("❌ No username in cookie")
         return redirect(AUTH_SERVICE_URL)
+
+    session_id = f"session:{username}"
+    session_data = redis_client.get(session_id)
+
+    print(f"🔹 Redis session value for {session_id}: {session_data}")
+
+    if not session_data:
+        print(f"❌ Redis session not found for {username}")
+        return redirect(AUTH_SERVICE_URL)
+
     return render_template("record.html")
 
 @bp.route("/analyze", methods=["POST"])
