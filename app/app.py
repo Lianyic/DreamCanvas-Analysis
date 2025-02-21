@@ -1,9 +1,8 @@
 import os
-from flask import Flask, render_template, request, jsonify, redirect, session, Blueprint
-from flask_cors import CORS
-from flask_session import Session
 import redis
 import openai
+from flask import Flask, render_template, request, jsonify, redirect, Blueprint
+from flask_cors import CORS
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -14,20 +13,13 @@ app.secret_key = os.getenv("SECRET_KEY", "79515e01fd5fe2ccf7abaa36bbea4640")
 CORS(app, supports_credentials=True)
 
 
-app.config["SESSION_TYPE"] = "redis"
-app.config["SESSION_PERMANENT"] = False
-app.config["SESSION_USE_SIGNER"] = True
-app.config["SESSION_KEY_PREFIX"] = "session:"
-app.config["SESSION_REDIS"] = redis.StrictRedis(
+redis_client = redis.StrictRedis(
     host=os.getenv("REDIS_HOST", "dreamcanvas-redis.redis.cache.windows.net"),
     port=int(os.getenv("REDIS_PORT", 6380)),
     password=os.getenv("REDIS_PASSWORD"),
     ssl=True,
     decode_responses=True
 )
-
-
-Session(app)
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 client = openai.OpenAI(api_key=OPENAI_API_KEY)
@@ -38,19 +30,22 @@ AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL", "http://dreamcanvas-auth.ukwest
 
 @bp.route("/")
 def home():
-    if "username" in session:
+    username = request.cookies.get("username")
+    if username and redis_client.get(f"session:{username}"):
         return redirect("http://dreamcanvas-analysis.ukwest.azurecontainer.io:5001/record")
     return redirect(f"{AUTH_SERVICE_URL}/")
 
 @bp.route("/record", methods=["GET"])
 def record_page():
-    if "username" not in session:
+    username = request.cookies.get("username")
+    if not username or not redis_client.get(f"session:{username}"):
         return redirect(AUTH_SERVICE_URL)
     return render_template("record.html")
 
 @bp.route("/analyze", methods=["POST"])
 def analyze_text():
-    if "username" not in session:
+    username = request.cookies.get("username")
+    if not username or not redis_client.get(f"session:{username}"):
         return jsonify({"error": "Unauthorized access."}), 401
 
     data = request.json
