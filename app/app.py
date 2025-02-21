@@ -21,7 +21,7 @@ app.config["SESSION_KEY_PREFIX"] = "session:"
 app.config["SESSION_REDIS"] = redis.StrictRedis(
     host=os.getenv("REDIS_HOST", "dreamcanvas-redis.redis.cache.windows.net"),
     port=int(os.getenv("REDIS_PORT", 6380)),
-    password=os.getenv("REDIS_PASSWORD", "Si4eQ7Gt1G1jFDmXcR9X7zxqJSwOhBuAzCaOdCV8c="),
+    password=os.getenv("REDIS_PASSWORD"),
     ssl=True,
     decode_responses=True
 )
