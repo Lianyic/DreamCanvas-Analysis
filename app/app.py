@@ -12,7 +12,6 @@ app.secret_key = os.getenv("SECRET_KEY", "79515e01fd5fe2ccf7abaa36bbea4640")
 
 CORS(app, supports_credentials=True)
 
-
 redis_client = redis.StrictRedis(
     host=os.getenv("REDIS_HOST", "dreamcanvas-redis.redis.cache.windows.net"),
     port=int(os.getenv("REDIS_PORT", 6380)),
@@ -30,35 +29,49 @@ AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL", "http://dreamcanvas-auth.ukwest
 
 @bp.route("/")
 def home():
-    username = request.cookies.get("username")
-    if username and redis_client.get(f"session:{username}"):
-        return redirect("https://dreamcanvas-analysis.ukwest.azurecontainer.io/record")
+    all_sessions = redis_client.keys("session:*")
+    print("🚀 Available sessions in Redis:", all_sessions)
+
+    if all_sessions:
+        for session_key in all_sessions:
+            username = session_key.split("session:")[-1]
+            session_data = redis_client.get(session_key)
+            if session_data:
+                print(f"✅ Found valid session for user: {username}")
+                return redirect("http://dreamcanvas-analysis.ukwest.azurecontainer.io:5001/record")
+
+    print(" No active sessions found. Redirecting to login.")
     return redirect(f"{AUTH_SERVICE_URL}/")
+
 
 @bp.route("/record", methods=["GET"])
 def record_page():
-    username = request.cookies.get("username")
     
-    print("🔹 Cookie username:", username)
-    if not username:
-        print("❌ No username in cookie")
+    all_sessions = redis_client.keys("session:*")
+    print("🚀 Checking Redis for active sessions:", all_sessions)
+
+    if not all_sessions:
+        print("No active sessions, redirecting to login.")
         return redirect(AUTH_SERVICE_URL)
 
-    session_id = f"session:{username}"
-    session_data = redis_client.get(session_id)
+    for session_key in all_sessions:
+        username = session_key.split("session:")[-1]
+        session_data = redis_client.get(session_key)
+        print(f"🔹 Checking session for {username}: {session_data}")
 
-    print(f"🔹 Redis session value for {session_id}: {session_data}")
+        if session_data:
+            return render_template("record.html")
 
-    if not session_data:
-        print(f"❌ Redis session not found for {username}")
-        return redirect(AUTH_SERVICE_URL)
+    print("No valid session found. Redirecting to login.")
+    return redirect(AUTH_SERVICE_URL)
 
-    return render_template("record.html")
 
 @bp.route("/analyze", methods=["POST"])
 def analyze_text():
-    username = request.cookies.get("username")
-    if not username or not redis_client.get(f"session:{username}"):
+    
+    all_sessions = redis_client.keys("session:*")
+
+    if not all_sessions:
         return jsonify({"error": "Unauthorized access."}), 401
 
     data = request.json
@@ -81,6 +94,7 @@ def analyze_text():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 app.register_blueprint(bp)
 
