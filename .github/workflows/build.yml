@@ -52,4 +52,7 @@ jobs:
           --environment-variables \
             SECRET_KEY=${{ secrets.SECRET_KEY }} \
             OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
-            AUTH_SERVICE_URL=${{ secrets.AUTH_SERVICE_URL }}
+            AUTH_SERVICE_URL=${{ secrets.AUTH_SERVICE_URL }} \
+            REDIS_HOST=${{ secrets.REDIS_HOST }} \
+            REDIS_PORT=${{ secrets.REDIS_PORT }} \
+            REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
