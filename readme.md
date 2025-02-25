@@ -9,7 +9,7 @@ cd DreamCanvas-Analysis
 
 ## Step 2: Create an .env file:
 ```bash
-
+```
 
 ## Step 3: Create & Activate a Virtual Environment
 ```bash
