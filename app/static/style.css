@@ -233,8 +233,23 @@ button:hover {
     font-size: 1.1rem;
     line-height: 1.6;
     box-shadow: 0 4px 8px rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 20px;
 }
 
 .hidden {
     display: none;
+}
+
+.dream-text {
+    flex: 1;
+}
+
+.dream-image {
+    width: 40%;
+    max-width: 250px;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(255, 255, 255, 0.2);
 }

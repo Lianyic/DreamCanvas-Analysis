@@ -100,8 +100,8 @@ def analyze_text():
         return jsonify({"error": "Unauthorized access."}), 401
 
     data = request.json
+    dream_date = data.get("date", "")
     user_input = data.get("text", "").strip()
-    dream_theme = data.get("theme", "")
     dream_type = data.get("type", "")
     dream_characters = data.get("characters", "")
     dream_environment = data.get("environment", "")
@@ -121,7 +121,6 @@ def analyze_text():
     
     Dream Description:
     Narrative: {user_input}
-    Main Theme: {dream_theme}
     Type of Dream: {dream_type}
     Key Characters: {dream_characters}
     Environment: {dream_environment}
@@ -132,6 +131,18 @@ def analyze_text():
     2. A smooth, engaging psychological interpretation of the dream.
     3. A few thoughtful suggestions based on the interpretation, which may help the dreamer reflect on its meaning or apply insights to real life.
     """
+    
+    dalle_prompt = f"""
+    Create a high-quality, minimalist, animated-style illustration that directly represents the underlying dream content.
+    - Dream Content: {user_input}
+    - Key Characters: {dream_characters}
+    - Environment: {dream_environment}
+    - Mood & Emotion: {dream_emotion}
+    The style should resemble high-quality animation, using soft, dreamy color palettes.
+    Avoid cluttered or overly complex details. Aviod words, logos, or any text in the image.
+    The illustration should have soft lighting, smooth gradients, and a surreal but clean aesthetic.
+    Make sure the illustration captures the core essence of the dream, not a random abstract scene.
+    """
 
     try:
         response = client.chat.completions.create(
@@ -140,11 +151,19 @@ def analyze_text():
                 {"role": "system", "content": "You are an expert in dream interpretation."},
                 {"role": "user", "content": prompt}
             ],
-            max_tokens=500,
+            max_tokens=200,
             temperature=0.7
         )
         
         analysis_result = response.choices[0].message.content.strip()
+        
+        dalle_response = client.images.generate(
+            model="dall-e-3",
+            prompt=dalle_prompt,
+            size="1024x1024",
+            n=1
+        )
+        image_url = dalle_response.data[0].url if dalle_response.data else None
 
         for session_key in all_sessions:
             username = session_key.split("session:")[-1]
@@ -159,7 +178,7 @@ def analyze_text():
                 db.session.commit()
                 break
 
-        return jsonify({"analysis": analysis_result})
+        return jsonify({"analysis": analysis_result, "image_url": image_url})
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500

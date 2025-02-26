@@ -1,7 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
     const analyzeBtn = document.getElementById("analyzeBtn");
     const resultBox = document.getElementById("analysisResult");
-    const dreamForm = document.getElementById("dreamForm");
 
     resultBox.style.display = "none";
 
@@ -9,7 +8,7 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log("Analyse button clicked!");
 
         const userInput = document.getElementById("dreamContent").value.trim();
-        const dreamDate = document.getElementById("dreamDate").value; // Get the date
+        const dreamDate = document.getElementById("dreamDate").value;
 
         if (!userInput || !dreamDate) {
             alert("Please enter a dream description and select a date!");
@@ -17,7 +16,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         const requestData = {
-            date: dreamDate,  // Add dream date to request
+            date: dreamDate,
             type: document.getElementById("type").value,
             characters: document.getElementById("characters").value,
             environment: document.getElementById("environment").value,
@@ -37,8 +36,14 @@ document.addEventListener("DOMContentLoaded", function () {
             if (data.analysis) {
                 console.log("🔹 AI Analysis Result:", data.analysis);
 
-                resultBox.innerHTML = formatAnalysis(data.analysis);
-                resultBox.style.display = "block";
+                let resultHTML = `<div class="dream-text">${marked.parse(data.analysis)}</div>`;
+
+                if (data.image_url) {
+                    resultHTML += `<img src="${data.image_url}" alt="Dream Visualization" class="dream-image">`;
+                }
+
+                resultBox.innerHTML = resultHTML;
+                resultBox.style.display = "flex"; // Set the flex container to be visible
             } else {
                 console.error("Server Error:", data.error);
                 resultBox.innerHTML = `<p style="color:red;">Error: ${data.error || "Unknown error"}</p>`;
