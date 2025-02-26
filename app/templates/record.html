@@ -5,72 +5,83 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DreamCanvas - Dream Analysis</title>
     <link rel="stylesheet" href="/static/style.css">
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const backgrounds = [
-                "/static/images/background1.png",
-                "/static/images/background2.png",
-                "/static/images/background3.png"
-            ];
-            document.body.style.backgroundImage = `url(${backgrounds[Math.floor(Math.random() * backgrounds.length)]})`;
-        });
-    </script>
 </head>
+
 <body>
+    <!-- Navigation Bar -->
     <div class="navbar">
-        <a href="/">Home</a>
-        <a href="/dashboard">Dashboard</a>
-        <a href="/record">Record Dream</a>
-        <a href="http://dreamcanvas-history.ukwest.azurecontainer.io:5002/history">Dream Atlas</a>
-    </div>    
+        <a href="http://dreamcanvas-auth.ukwest.azurecontainer.io:5000/">Home</a>
+        <a href="http://dreamcanvas-analysis.ukwest.azurecontainer.io:5001/record">Record Dream</a>
+        <a href="http://dreamcanvas-history.ukwest.azurecontainer.io:5002/history">Dream History</a>
+    </div>
 
+    <!-- Title Section -->
     <div class="hero-text">
-        <h1>Record and Analyze Your Dreams</h1>
-        <p>Enter your dream below and receive an AI-generated analysis.</p>
+        <h1>Step into your dreams</h1>
     </div>
 
-    <div class="container">
-        <h2>Describe Your Dream</h2>
-        <textarea id="userInput" placeholder="Enter your dream here..."></textarea>
-        <button id="analyzeBtn">Analyze</button>
-        <div id="loading" class="loading" style="display: none;">Analyzing your dream...</div>
-        <div id="result" class="result-box"></div>
-    </div>
+    <!-- Dream Analysis Form -->
+    <form id="dreamForm">
+        <div class="date-container">
+            <label for="dreamDate">📅 Date</label>
+            <input type="date" id="dreamDate" required>
+        </div>
 
-    <footer>
-        <p>&copy; 2025 DreamCanvas</p>
-    </footer>
+        <div class="form-grid">
+            <div class="form-item">
+                <label>🛌 Type</label>
+                <select id="type">
+                    <option value="Lucid">Lucid Dream</option>
+                    <option value="Nightmare">Nightmare</option>
+                    <option value="Recurring">Recurring Dream</option>
+                    <option value="Fantasy">Fantasy</option>
+                    <option value="Memory Related">Memory Related</option>
+                </select>
+            </div>
 
-    <script>
-        document.getElementById("analyzeBtn").addEventListener("click", function() {
-            const userInput = document.getElementById("userInput").value.trim();
-            if (!userInput) {
-                alert("Please enter a dream description.");
-                return;
-            }
+            <div class="form-item">
+                <label>👥 Characters</label>
+                <select id="characters">
+                    <option value="Self">Self</option>
+                    <option value="Family">Family</option>
+                    <option value="Strangers">Strangers</option>
+                    <option value="Animals">Animals</option>
+                    <option value="Supernatural Beings">Supernatural Beings</option>
+                </select>
+            </div>
 
-            document.getElementById("loading").style.display = "block";
-            document.getElementById("result").innerHTML = "";
+            <div class="form-item">
+                <label>🌆 Environment</label>
+                <select id="environment">
+                    <option value="Familiar Place">Familiar Place</option>
+                    <option value="Surreal Landscape">Surreal Landscape</option>
+                    <option value="Another World">Another World</option>
+                    <option value="Uncertain Location">Uncertain Location</option>
+                </select>
+            </div>
+            
+            <div class="form-item">
+                <label>❤️ Emotion</label>
+                <select id="emotion">
+                    <option value="Calm">Calm</option>
+                    <option value="Anxious">Anxious</option>
+                    <option value="Excited">Excited</option>
+                    <option value="Confused">Confused</option>
+                    <option value="Relieved">Relieved</option>
+                </select>
+            </div>
+        </div>
 
-            fetch("/analyze", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ text: userInput })
-            })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById("loading").style.display = "none";
-                if (data.analysis) {
-                    document.getElementById("result").innerHTML = `<h3>Analysis Result:</h3><p>${data.analysis}</p>`;
-                } else {
-                    document.getElementById("result").innerHTML = `<p style="color:red;">Error: ${data.error || "Unknown error occurred."}</p>`;
-                }
-            })
-            .catch(error => {
-                document.getElementById("loading").style.display = "none";
-                document.getElementById("result").innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
-            });
-        });
-    </script>
+        <label>📝 Dream Description</label>
+        <textarea id="dreamContent" rows="4" placeholder="Describe your dream..."></textarea>
+
+        <button type="button" id="analyzeBtn">Analyse Dream</button>
+    </form>
+
+    <!-- Dream Analysis Result -->
+    <div class="result-box" id="analysisResult"></div>
+
+    <script src="/static/script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </body>
 </html>
