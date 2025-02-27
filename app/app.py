@@ -236,7 +236,7 @@ def analyze():
                     dream_title=dream_title,
                     dream_content=user_input,
                     analysis_result=analysis_body,
-                    dream_date=dream_date
+                    dream_date=dream_date,
                     image_url=image_url
                 )
                 db.session.add(new_record)
