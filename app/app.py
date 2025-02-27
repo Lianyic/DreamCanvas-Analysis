@@ -175,7 +175,7 @@ def analyze():
     Emotion upon Waking: {dream_emotion}
     
     Deliverables:
-    1. A short but meaningful dream title that summarizes its essence. (without "Dream Title:" or quatation marks in the response)
+    1. A short but meaningful dream title that summarizes its essence on the first line, separated from the analysis. (without "Dream Title:" or quatation marks in the response)
     2. A smooth, engaging psychological interpretation of the dream.
     3. A few thoughtful suggestions based on the interpretation, which may help the dreamer reflect on its meaning or apply insights to real life.
     """
@@ -203,7 +203,11 @@ def analyze():
             temperature=0.7
         )
         
-        analysis_result = response.choices[0].message.content.strip()
+        full_analysis = response.choices[0].message.content.strip()
+        
+        analysis_lines = full_analysis.split("\n", 1)
+        dream_title = analysis_lines[0].strip()
+        analysis_body = analysis_lines[1].strip() if len(analysis_lines) > 1 else "No analysis available."
         
         dalle_response = client.images.generate(
             model="dall-e-3",
@@ -223,14 +227,15 @@ def analyze():
                 new_record = DreamRecord(
                     username=username,
                     dream_content=user_input,
-                    analysis_result=analysis_result
+                    analysis_result=analysis_body
                 )
                 db.session.add(new_record)
                 db.session.commit()
                 break
 
         return jsonify({
-            "analysis": analysis_result,
+            "title": dream_title,
+            "analysis": analysis_body,
             "image_url": image_url,
             "playlist_url": playlist_url
         })

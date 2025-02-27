@@ -251,6 +251,21 @@ button:hover {
     margin-top: 70px;
 }
 
+.analysing-text {
+    font-size: 1rem;
+    text-align: center;
+    margin-top: 10px;
+    margin-bottom: 80px;
+    margin-left: 200px;
+}
+
+.dream-title {
+    font-size: 1.1rem;
+    font-weight: bold;
+    text-align: left;
+    margin-bottom: 10px;
+}
+
 .dream-image {
     width: 100%;
     max-width: 250px;

@@ -1,12 +1,15 @@
 document.addEventListener("DOMContentLoaded", function () {
     const analyzeBtn = document.getElementById("analyzeBtn");
     const resultBox = document.getElementById("analysisResult");
-    const dreamText = document.getElementById("dreamAnalysis");
+    const dreamTitle = document.getElementById("dreamTitle");
     const dreamImage = document.getElementById("dreamImage");
     const spotifyPlaylist = document.getElementById("spotifyPlaylist");
+    const dreamAnalysis = document.getElementById("dreamAnalysis");
+
+    resultBox.style.display = "none";
 
     analyzeBtn.addEventListener("click", function () {
-        console.log("Analyse button clicked!");
+        console.log("🔹 Analyse button clicked!");
 
         const userInput = document.getElementById("dreamContent").value.trim();
         const dreamDate = document.getElementById("dreamDate").value;
@@ -15,6 +18,12 @@ document.addEventListener("DOMContentLoaded", function () {
             alert("Please enter a dream description and select a date!");
             return;
         }
+
+        resultBox.style.display = "block";
+        dreamTitle.innerHTML = '<p class="analysing-text">Analysing...</p>';
+        dreamAnalysis.innerHTML = "";
+        dreamImage.style.display = "none";
+        spotifyPlaylist.style.display = "none";
 
         const requestData = {
             date: dreamDate,
@@ -25,10 +34,7 @@ document.addEventListener("DOMContentLoaded", function () {
             text: userInput
         };
 
-        resultBox.style.display = "flex";
-        dreamText.innerHTML = "<p>Analysing...</p>";
-        dreamImage.style.display = "none";
-        spotifyPlaylist.style.display = "none";
+        console.log("🔹 Sending Data:", requestData);
 
         fetch("/analyze", {
             method: "POST",
@@ -37,33 +43,31 @@ document.addEventListener("DOMContentLoaded", function () {
         })
         .then(response => response.json())
         .then(data => {
+            console.log("🔹 AI Title:", data.title);
             console.log("🔹 AI Analysis Result:", data.analysis);
             console.log("🔹 Image URL:", data.image_url);
             console.log("🔹 Spotify Playlist URL:", data.playlist_url);
 
-            if (dreamText) {
-                dreamText.innerHTML = marked.parse(data.analysis);
-            }
+            dreamTitle.innerHTML = `<h2>${data.title || "Dream Analysis"}</h2>`;
 
-            if (dreamImage && data.image_url) {
+            dreamAnalysis.innerHTML = data.analysis;
+
+            if (data.image_url) {
                 dreamImage.src = data.image_url;
                 dreamImage.style.display = "block";
-            } else if (dreamImage) {
-                dreamImage.style.display = "none";
             }
 
-            if (spotifyPlaylist && data.playlist_url) {
+            if (data.playlist_url) {
                 spotifyPlaylist.src = `https://open.spotify.com/embed/playlist/${data.playlist_url.split('/playlist/')[1]}`;
                 spotifyPlaylist.style.display = "block";
-            } else if (spotifyPlaylist) {
-                spotifyPlaylist.style.display = "none";
             }
+
+            resultBox.style.display = "flex";
         })
         .catch(error => {
             console.error("Request Failed:", error);
-            if (resultBox) {
-                dreamText.innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
-            }
+            resultBox.innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
+            resultBox.style.display = "block";
         });
     });
 });
