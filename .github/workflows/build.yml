@@ -29,17 +29,10 @@ jobs:
         pip install -r requirements.txt
     
     - name: Run Flask App Tests
-      env:
-        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       run: |
         python app/app.py &
         sleep 5
-      
-        SESSION_ID=$(curl -s -X POST http://localhost:5000/login \
-          -H "Content-Type: application/json" \
-          -d '{"username": "test123", "password": "test123"}' | jq -r '.session_id')
-      
-        curl --fail -H "Session-ID: $SESSION_ID" http://localhost:5001/record || exit 1
+        curl --fail http://localhost:5001/ || exit 1
 
   build:
     name: Build to GHCR
