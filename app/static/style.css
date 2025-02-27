@@ -93,6 +93,7 @@ body::before {
     font-size: 1.1rem;
     line-height: 1.6;
     box-shadow: 0 4px 8px rgba(255, 255, 255, 0.2);
+    font-weight: bold;
 }
 
 .form-grid {
@@ -105,7 +106,8 @@ body::before {
 .form-item {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
+    text-align: left;
 }
 
 .form-item label {
@@ -113,6 +115,7 @@ body::before {
     font-weight: bold;
     margin-bottom: 5px;
     color: white;
+    text-align: left;
 }
 
 /* ====== Date Picker Styling ====== */
@@ -123,9 +126,9 @@ body::before {
     width: 100%;
     max-width: 350px;
     margin: auto;
-    padding: 8px;
     gap: 6px;
     margin-left: 0px;
+    margin-bottom: 10px;
 }
 
 .date-container label {
@@ -224,7 +227,7 @@ button:hover {
 
 /* ====== Result Box ====== */
 .result-box {
-    max-width: 800px;
+    max-width: 900px;
     margin: 30px auto;
     padding: 20px;
     background: rgba(255, 255, 255, 0.1);
@@ -234,16 +237,45 @@ button:hover {
     line-height: 1.6;
     box-shadow: 0 4px 8px rgba(255, 255, 255, 0.2);
     display: flex;
-    align-items: center;
+    flex-direction: column;
     gap: 20px;
 }
 
-.hidden {
-    display: none;
+/* ====== Header: Title, Date, Playlist ====== */
+.result-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
 }
 
-.dream-text {
-    flex: 1;
+.result-title {
+    font-size: 1.8rem;
+    font-weight: bold;
+}
+
+.result-date {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* ====== Playlist Section ====== */
+.spotify-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.spotify-iframe {
+    border-radius: 8px;
+}
+
+/* ====== Dream Image & Text ====== */
+.result-container {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 15px;
 }
 
 .dream-image {
@@ -252,4 +284,47 @@ button:hover {
     height: auto;
     border-radius: 10px;
     box-shadow: 0 4px 10px rgba(255, 255, 255, 0.2);
+}
+
+.dream-text {
+    flex: 1;
+}
+
+/* ====== Spotify Playlist ====== */
+.spotify-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 15px;
+}
+
+.spotify-link {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: #1DB954;
+    color: white;
+    font-weight: bold;
+    border-radius: 6px;
+    text-decoration: none;
+    text-align: center;
+    width: fit-content;
+}
+
+.spotify-link:hover {
+    background: #1ed760;
+}
+
+.hidden {
+    display: none;
+}
+
+/* ====== Footer ====== */
+footer {
+    background: transparent;
+    text-align: center;
+    padding: 10px 0;
+    color: white;
+    font-size: 0.9rem;
+    margin-top: 40px;
 }

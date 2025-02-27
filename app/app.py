@@ -1,6 +1,7 @@
 import os 
 import redis
 import openai
+import requests
 from flask import Flask, render_template, request, jsonify, redirect, Blueprint
 from flask_cors import CORS
 from dotenv import load_dotenv
@@ -46,9 +47,55 @@ redis_client = redis.StrictRedis(
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 client = openai.OpenAI(api_key=OPENAI_API_KEY)
 
+SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
+SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
+
 bp = Blueprint("main", __name__)
 
 AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL", "http://dreamcanvas-auth.ukwest.azurecontainer.io:5000/")
+
+# ==========================
+# Helper Functions
+# ==========================
+def get_spotify_token():
+    auth_url = "https://accounts.spotify.com/api/token"
+    auth_response = requests.post(
+        auth_url,
+        data={"grant_type": "client_credentials"},
+        auth=(SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET),
+    )
+
+    if auth_response.status_code == 200:
+        return auth_response.json().get("access_token")
+    else:
+        print("Spotify Auth Failed:", auth_response.json())
+        return None
+
+def get_spotify_recommendation(dream_mood):
+    auth_url = "https://accounts.spotify.com/api/token"
+    auth_response = requests.post(
+        auth_url,
+        data={"grant_type": "client_credentials"},
+        auth=(SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET)
+    )
+
+    auth_data = auth_response.json()
+    access_token = auth_data.get("access_token")
+
+    if not access_token:
+        raise ValueError(f"Spotify Authentication Failed: {auth_data}")
+
+    headers = {"Authorization": f"Bearer {access_token}"}
+    search_url = f"https://api.spotify.com/v1/search?q={dream_mood}&type=playlist&limit=1"
+    response = requests.get(search_url, headers=headers)
+
+    data = response.json()
+    playlists = data.get("playlists", {}).get("items", [])
+    
+    if not playlists:
+        raise ValueError(f"No Spotify playlist found for mood: {dream_mood}")
+
+    return playlists[0]["external_urls"]["spotify"]
 
 # ==========================
 # Routes
@@ -92,7 +139,7 @@ def record_page():
     return redirect(AUTH_SERVICE_URL)
 
 @bp.route("/analyze", methods=["POST"])
-def analyze_text():
+def analyze():
     
     all_sessions = redis_client.keys("session:*")
 
@@ -118,6 +165,7 @@ def analyze_text():
     2. Avoid breaking down the dream into rigid categories (e.g., "Main Theme:", "Dream Type:"). Instead, integrate the details seamlessly into a narrative.
     3. Suggest practical takeaways or small pieces of advice based on the dream interpretation.
     4. Assign a meaningful and concise dream title that captures its essence for easy reference in future dream logs.
+    5. In 200 words or less.
     
     Dream Description:
     Narrative: {user_input}
@@ -163,7 +211,10 @@ def analyze_text():
             size="1024x1024",
             n=1
         )
+        
         image_url = dalle_response.data[0].url if dalle_response.data else None
+        
+        playlist_url = get_spotify_recommendation(dream_emotion)
 
         for session_key in all_sessions:
             username = session_key.split("session:")[-1]
@@ -178,7 +229,11 @@ def analyze_text():
                 db.session.commit()
                 break
 
-        return jsonify({"analysis": analysis_result, "image_url": image_url})
+        return jsonify({
+            "analysis": analysis_result,
+            "image_url": image_url,
+            "playlist_url": playlist_url
+        })
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500

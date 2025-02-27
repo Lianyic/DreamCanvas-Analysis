@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const analyzeBtn = document.getElementById("analyzeBtn");
     const resultBox = document.getElementById("analysisResult");
 
-    resultBox.style.display = "none";
+    resultBox.style.display = "none"; // Hide result initially
 
     analyzeBtn.addEventListener("click", function () {
         console.log("Analyse button clicked!");
@@ -33,31 +33,46 @@ document.addEventListener("DOMContentLoaded", function () {
         })
         .then(response => response.json())
         .then(data => {
-            if (data.analysis) {
-                console.log("🔹 AI Analysis Result:", data.analysis);
+            console.log("🔹 AI Title:", data.title);
+            console.log("🔹 AI Analysis Result:", data.analysis);
+            console.log("🔹 Image URL:", data.image_url);
+            console.log("🔹 Spotify Playlist URL:", data.playlist_url);
 
-                let resultHTML = `<div class="dream-text">${marked.parse(data.analysis)}</div>`;
+            let resultHTML = `
+                <!-- Top Section: Title & Date -->
+                <div class="result-header">
+                    <h2 class="result-title">${data.title || "Dream Analysis"}</h2>
+                    <p class="result-date">📅 Date: ${dreamDate}</p>
+                </div>
 
-                if (data.image_url) {
-                    resultHTML += `<img src="${data.image_url}" alt="Dream Visualization" class="dream-image">`;
-                }
+                <!-- Playlist on Top -->
+                ${data.playlist_url ? `
+                    <div class="spotify-container">
+                        <iframe class="spotify-iframe" src="https://open.spotify.com/embed/playlist/${data.playlist_url.split('/playlist/')[1]}" 
+                            width="400" height="100" frameborder="0" allowtransparency="true" allow="encrypted-media">
+                        </iframe>
+                    </div>
+                ` : ""}
 
-                resultBox.innerHTML = resultHTML;
-                resultBox.style.display = "flex"; // Set the flex container to be visible
-            } else {
-                console.error("Server Error:", data.error);
-                resultBox.innerHTML = `<p style="color:red;">Error: ${data.error || "Unknown error"}</p>`;
-                resultBox.style.display = "block";
-            }
+                <!-- Image + Dream Text -->
+                <div class="result-container">
+                    <!-- Image on the left -->
+                    ${data.image_url ? `<img src="${data.image_url}" alt="Dream Visualization" class="dream-image">` : ""}
+                    
+                    <!-- Dream analysis text -->
+                    <div class="dream-text">
+                        ${marked.parse(data.analysis)}
+                    </div>
+                </div>
+            `;
+
+            resultBox.innerHTML = resultHTML;
+            resultBox.style.display = "block";  // Show result
         })
         .catch(error => {
-            console.error("Request Failed:", error);
+            console.error("❌ Request Failed:", error);
             resultBox.innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
             resultBox.style.display = "block";
         });
     });
-
-    function formatAnalysis(text) {
-        return marked.parse(text);
-    }
 });

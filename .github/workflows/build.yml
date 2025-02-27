@@ -55,5 +55,7 @@ jobs:
             AUTH_SERVICE_URL=${{ secrets.AUTH_SERVICE_URL }} \
             REDIS_HOST=${{ secrets.REDIS_HOST }} \
             REDIS_PORT=${{ secrets.REDIS_PORT }} \
-            REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
-            DATABASE_URL=${{ secrets.DATABASE_URL }}
+            REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }} \
+            DATABASE_URL=${{ secrets.DATABASE_URL }} \
+            SPOTIFY_CLIENT_ID=${{ secrets.SPOTIFY_CLIENT_ID }} \
+            SPOTIFY_CLIENT_SECRET=${{ secrets.SPOTIFY_CLIENT_SECRET }}
