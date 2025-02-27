@@ -205,7 +205,7 @@ def analyze():
                 {"role": "system", "content": "You are an expert in dream interpretation."},
                 {"role": "user", "content": prompt}
             ],
-            max_tokens=200,
+            max_tokens=300,
             temperature=0.7
         )
 
