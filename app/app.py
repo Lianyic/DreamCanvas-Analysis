@@ -213,7 +213,7 @@ def analyze():
 
         
         analysis_lines = full_analysis.split("\n", 1)
-        dream_title = analysis_lines[0].strip()
+        dream_title = ''.join(c for c in analysis_lines[0].strip() if c.isalnum() or c.isspace())
         analysis_body = analysis_lines[1].strip() if len(analysis_lines) > 1 else "No analysis available."
 
 

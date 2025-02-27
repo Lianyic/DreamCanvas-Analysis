@@ -1,4 +1,4 @@
-name: Deploy Dream Analysis Service to Azure Container Instance
+name: Deploy Dream Analysis Service
 
 on:
   push:
@@ -12,9 +12,32 @@ env:
   IMAGE_NAME: ghcr.io/lianyic/dreamcanvas-analysis-service:latest
 
 jobs:
-  deploy:
+  test:
+    name: Code Quality & Flask Test
     runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
 
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install Dependencies
+      run: |
+        pip install -r requirements.txt
+    
+    - name: Run Flask App Tests
+      run: |
+        python app/app.py &
+        sleep 5
+        curl --fail http://localhost:5001/ || exit 1
+
+  build:
+    name: Build to GHCR
+    needs: test
+    runs-on: ubuntu-latest
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
@@ -27,16 +50,35 @@ jobs:
 
     - name: Push Docker Image to GHCR
       run: docker push $IMAGE_NAME
+  
+  deploy:
+    name: Deploy to ACI
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
 
     - name: Azure Login
       uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+    - name: Check if Azure Container Instance Exists
+      id: check-container
+      continue-on-error: true
+      run: |
+        az container show --resource-group $RESOURCE_GROUP --name $CONTAINER_NAME
+
     - name: Delete existing Azure Container Instance (if exists)
+      if: steps.check-container.outcome == 'success'
       continue-on-error: true
       run: |
         az container delete --resource-group $RESOURCE_GROUP --name $CONTAINER_NAME --yes
+
+    - name: Ensure Container Cleanup
+      run: |
+        az container list --resource-group $RESOURCE_GROUP --output table
 
     - name: Create new Azure Container Instance
       run: |
@@ -59,3 +101,11 @@ jobs:
             DATABASE_URL=${{ secrets.DATABASE_URL }} \
             SPOTIFY_CLIENT_ID=${{ secrets.SPOTIFY_CLIENT_ID }} \
             SPOTIFY_CLIENT_SECRET=${{ secrets.SPOTIFY_CLIENT_SECRET }}
+
+    - name: Verify Deployment
+      run: |
+        az container show --resource-group $RESOURCE_GROUP --name $CONTAINER_NAME --output table
+            
+    - name: Output Deployment Logs
+      run: |
+        az container logs --resource-group $RESOURCE_GROUP --name $CONTAINER_NAME
