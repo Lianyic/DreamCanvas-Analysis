@@ -35,7 +35,8 @@ class DreamRecord(db.Model):
     dream_title = db.Column(db.String(255), nullable=False)
     dream_content = db.Column(db.Text, nullable=False)
     analysis_result = db.Column(db.Text, nullable=False)
-    dream_date = db.Column(db.Date, nullable=False)
+    dream_date = db.Column(db.Date, nullable=True)
+    image_url = db.Column(db.String(512), nullable=True)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
 
 redis_client = redis.StrictRedis(
@@ -236,6 +237,7 @@ def analyze():
                     dream_content=user_input,
                     analysis_result=analysis_body,
                     dream_date=dream_date
+                    image_url=image_url
                 )
                 db.session.add(new_record)
                 db.session.commit()
