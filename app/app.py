@@ -32,8 +32,10 @@ migrate = Migrate(app, db)
 class DreamRecord(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(255), nullable=False)
+    dream_title = db.Column(db.String(255), nullable=False)
     dream_content = db.Column(db.Text, nullable=False)
     analysis_result = db.Column(db.Text, nullable=False)
+    dream_date = db.Column(db.Date, nullable=False)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
 
 redis_client = redis.StrictRedis(
@@ -140,7 +142,6 @@ def record_page():
 
 @bp.route("/analyze", methods=["POST"])
 def analyze():
-    
     all_sessions = redis_client.keys("session:*")
 
     if not all_sessions:
@@ -157,25 +158,26 @@ def analyze():
     if not user_input:
         return jsonify({"error": "No text provided"}), 400
 
+    
     prompt = f"""
-    You are a professional dream analyst with deep expertise in psychology. Your task is to analyze the given dream in a natural, fluid, and engaging manner. 
+    You are a professional dream analyst with deep expertise in psychology. Your task is to analyze the given dream in a natural, fluid, and engaging manner.
 
     Key Instructions:
     1. Provide a flowing and insightful analysis that captures the subconscious messages behind the dream, its potential connections to the dreamer's waking life, and its emotional significance.
-    2. Avoid breaking down the dream into rigid categories (e.g., "Main Theme:", "Dream Type:"). Instead, integrate the details seamlessly into a narrative.
-    3. Suggest practical takeaways or small pieces of advice based on the dream interpretation.
-    4. Assign a meaningful and concise dream title that captures its essence for easy reference in future dream logs.
-    5. In 200 words or less.
-    
+    2. Assign a meaningful and concise dream title that captures its essence on the first line.
+    3. Avoid breaking down the dream into rigid categories (e.g., "Main Theme:", "Dream Type:"). Instead, integrate the details seamlessly into a narrative.
+    4. Suggest practical takeaways or small pieces of advice based on the dream interpretation.
+    5. Limit the response to 200 words.
+
     Dream Description:
     Narrative: {user_input}
     Type of Dream: {dream_type}
     Key Characters: {dream_characters}
     Environment: {dream_environment}
     Emotion upon Waking: {dream_emotion}
-    
+
     Deliverables:
-    1. A short but meaningful dream title that summarizes its essence on the first line, separated from the analysis. (without "Dream Title:" or quatation marks in the response)
+    1. A short but meaningful dream title that summarizes its essence on the first line.
     2. A smooth, engaging psychological interpretation of the dream.
     3. A few thoughtful suggestions based on the interpretation, which may help the dreamer reflect on its meaning or apply insights to real life.
     """
@@ -187,12 +189,12 @@ def analyze():
     - Environment: {dream_environment}
     - Mood & Emotion: {dream_emotion}
     The style should resemble high-quality animation, using soft, dreamy color palettes.
-    Avoid cluttered or overly complex details. Aviod words, logos, or any text in the image.
+    Avoid cluttered or overly complex details. Avoid words, logos, or any text in the image.
     The illustration should have soft lighting, smooth gradients, and a surreal but clean aesthetic.
-    Make sure the illustration captures the core essence of the dream, not a random abstract scene.
     """
 
     try:
+        
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[
@@ -202,32 +204,38 @@ def analyze():
             max_tokens=200,
             temperature=0.7
         )
-        
+
         full_analysis = response.choices[0].message.content.strip()
+
         
         analysis_lines = full_analysis.split("\n", 1)
         dream_title = analysis_lines[0].strip()
         analysis_body = analysis_lines[1].strip() if len(analysis_lines) > 1 else "No analysis available."
-        
+
+
         dalle_response = client.images.generate(
             model="dall-e-3",
             prompt=dalle_prompt,
             size="1024x1024",
             n=1
         )
-        
+
         image_url = dalle_response.data[0].url if dalle_response.data else None
+
         
         playlist_url = get_spotify_recommendation(dream_emotion)
 
+        
         for session_key in all_sessions:
             username = session_key.split("session:")[-1]
             session_data = redis_client.get(session_key)
             if session_data:
                 new_record = DreamRecord(
                     username=username,
+                    dream_title=dream_title,
                     dream_content=user_input,
-                    analysis_result=analysis_body
+                    analysis_result=analysis_body,
+                    dream_date=dream_date
                 )
                 db.session.add(new_record)
                 db.session.commit()
