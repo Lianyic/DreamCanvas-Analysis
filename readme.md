@@ -31,21 +31,22 @@ dreamvenv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### Step 5: Apply Database Migrations (Do not follow if you have changed the database configuration)
+### Step 5: Apply Database Migrations
+Do not follow if you have changed the database configuration  
 Before running the app, ensure the database is up to date:
 ```bash
 flask db upgrade
 ```
 
 ### Step 6: Run the app
+default running at http://127.0.0.1:5001/record
 ```bash 
 python app/app.py 
-or 
-flask run
 ```
 
 ## Access the Deployed Service
-DreamCanvas Analysis Service is automatically deployed via GitHub Actions and is accessible at: http://dreamcanvas-analysis.ukwest.azurecontainer.io:5001/
+DreamCanvas Analysis Service is automatically deployed via GitHub Actions and is accessible at:  
+http://dreamcanvas-analysis.ukwest.azurecontainer.io:5001/
 
 ### Check database
 ```
