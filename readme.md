@@ -11,6 +11,13 @@ cd DreamCanvas-Analysis
 
 ### Step 2: Create an .env file:
 ```bash
+SECRET_KEY=your secret key
+OPENAI_API_KEY=your openAI key
+AUTH_SERVICE_URL=http://dreamcanvas-auth.ukwest.azurecontainer.io:5000/
+DATABASE_URL=mysql+pymysql://adminuser:LeilaLily?!@dreamanalysis.mysql.database.azure.com/dream_analysis_db
+REDIS_HOST=dreamcanvas-redis.redis.cache.windows.net
+REDIS_PORT=6380
+REDIS_PASSWORD=your redis password
 ```
 
 ### Step 3: Create & Activate a Virtual Environment

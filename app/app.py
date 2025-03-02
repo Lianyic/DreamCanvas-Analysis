@@ -15,14 +15,12 @@ from flask_migrate import Migrate
 load_dotenv()
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
-app.secret_key = os.getenv("SECRET_KEY", "79515e01fd5fe2ccf7abaa36bbea4640")
+app.secret_key = os.getenv("SECRET_KEY")
 
 CORS(app, supports_credentials=True)
 
 DATABASE_URL = os.getenv(
-    "DATABASE_URL", 
-    "mysql+pymysql://adminuser:LeilaLily?!@dreamanalysis.mysql.database.azure.com/dream_analysis_db"
-).strip('"')
+    "DATABASE_URL")
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
@@ -43,7 +41,7 @@ class DreamRecord(db.Model):
     emotion = db.Column(db.String(255), nullable=True)
 
 redis_client = redis.StrictRedis(
-    host=os.getenv("REDIS_HOST", "dreamcanvas-redis.redis.cache.windows.net"),
+    host=os.getenv("REDIS_HOST"),
     port=int(os.getenv("REDIS_PORT", 6380)),
     password=os.getenv("REDIS_PASSWORD"),
     ssl=True,
@@ -58,7 +56,7 @@ SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
 
 bp = Blueprint("main", __name__)
 
-AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL", "http://dreamcanvas-auth.ukwest.azurecontainer.io:5000/")
+AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL")
 
 # ==========================
 # Helper Functions
